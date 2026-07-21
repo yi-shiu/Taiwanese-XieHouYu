@@ -275,4 +275,8 @@ python common_misclassified.py
 
 ### `max_length` 設定依據
 
-`max_length = 40` 的設定來自對資料集的 Token 長度統計分析。經 Tokenizer 編碼後（含 `[CLS]` 與 `[SEP]`），所有 2,268 筆歇後語的 Token 長度均介於 **10 至 35** 之間，`max_length = 40` 可完整涵蓋全部樣本而不發生截斷，長度不足的序列則以 padding 補齊至固定長度。
+`max_length = 40` 的設定來自對資料集的 Token 長度統計分析。經 Tokenizer 編碼後（含 `[CLS]` 與 `[SEP]`），所有 2,268 筆歇後語的 Token 長度介於 **10 至 35** 之間，`max_length = 40` 可完整涵蓋全部樣本而不發生截斷，長度不足的序列則以 padding 補齊至固定長度。
+
+---
+
+## 授權與引用
