@@ -78,13 +78,14 @@ HuggingFace 頁面：https://huggingface.co/bert-base-chinese
 
 ### T-BERT（tbert-base）
 
-由[鍾明諺](https://ndltd.ncl.edu.tw/cgi-bin/gs32/gsweb.cgi/ccd=slfGl3/search?q=auc=%22%E9%8D%BE%E6%98%8E%E8%AB%BA%22.&searchmode=basic)開發，以臺灣國語、閩南語與客家語混合語料預訓練，詞表規模達 89,660 個子詞單元。
+由[鍾明諺](https://hdl.handle.net/11296/aqxj79)開發，以臺灣國語、閩南語與客家語混合語料預訓練，詞表規模達 89,660 個子詞單元。訓練程式碼與語料來自 [DeepqEducation/t-bert](https://github.com/DeepqEducation/t-bert)；本研究直接載入發布於 HuggingFace 的預訓練模型權重。
 
 ```bash
 python -c "from transformers import AutoTokenizer, AutoModel; AutoTokenizer.from_pretrained('yixiuuu/tbert-base'); AutoModel.from_pretrained('yixiuuu/tbert-base')"
 ```
 
 HuggingFace 頁面：https://huggingface.co/yixiuuu/tbert-base  
+原始 GitHub：https://github.com/DeepqEducation/t-bert  
 T-BERT 論文：https://hdl.handle.net/11296/aqxj79
 
 ---
@@ -148,7 +149,7 @@ pip install torch transformers scikit-learn pandas numpy matplotlib seaborn open
 | B     | 第 4–7 層  | 第 4–11 層     | 3.6e-5     |
 | C     | 第 0–3 層  | 第 0–11 層     | 3.4e-5     |
 
-**正則化與對抗訓練（選配）**：
+**正則化與對抗訓練**：
 
 | 模型                       | 額外技術                                  |
 | -------------------------- | ----------------------------------------- |
@@ -162,13 +163,13 @@ pip install torch transformers scikit-learn pandas numpy matplotlib seaborn open
 
 ### 隨機種子
 
-兩階段微調系列（`cv_two_stage*.py``cv_two_stage_rdrop.py``cv_two_stage_fgm.py``cv_two_stage_rdropfgm.py`）預設跨五組隨機種子執行：
+兩階段微調系列（`cv_two_stage.py`、`cv_two_stage_rdrop.py`、`cv_two_stage_fgm.py`、`cv_two_stage_rdropfgm.py`）預設跨五組隨機種子執行：
 
 ```python
 seeds = (0, 1, 42, 123, 1234)
 ```
 
-基線模型（`cv_bert-base-chinese.py`、`cv_t-bert.py`）預設固定 `seed=0`，搭配多組學習率搜尋：
+基線模型（`cv_bert-base-chinese.py`、`cv_t-bert.py`）預設 `seed=0`，搭配多組學習率搜尋：
 
 ```python
 run_multi_lr_experiment(
@@ -189,7 +190,7 @@ run_multi_lr_experiment(
 @dataclass
 class CFG:
     ...
-    min_new_token_freq: int = 1  # 在此設定詞頻門檻：出現次數低於此值的 T-BERT 新詞將被排除
+    min_new_token_freq: int = 1
 ```
 
 建議值參考：
@@ -197,7 +198,7 @@ class CFG:
 - `1`：保留所有語料中出現的新詞（本實驗預設值）
 - `2`：排除僅出現一次的極低頻子詞——論文實驗顯示，在兩階段微調模型（`cv_two_stage.py`）下此設定的改善案例多於退化案例，有助於提升分類效益
 
-> 注意：此設定僅對兩階段微調系列（`cv_two_stage*.py`）有效。基線模型（BERT-base-Chinese、T-BERT）不涉及詞表擴充，無此參數。
+> 注意：此設定僅對兩階段微調系列有效。基線模型（BERT-base-Chinese、T-BERT）不涉及詞表擴充，無此參數。
 
 ---
 
@@ -268,8 +269,10 @@ python common_misclassified.py
 | `early_stopping_patience` | 3    |
 | R-Drop `alpha`            | 0.5  |
 | FGM `epsilon`             | 0.5  |
-| Layerwise LR decay        | 0.9  |
+| `phase_a_layerwise_decay` | 0.9  |
+| `phase_b_layerwise_decay` | 0.9  |
+| `phase_c_layerwise_decay` | 0.9  |
 
 ### `max_length` 設定依據
 
-`max_length = 40` 的設定來自對資料集的 Token 長度統計分析。以 `bert-base-chinese` tokenizer 編碼後（含 `[CLS]` 與 `[SEP]`），所有 2,268 筆歇後語的 Token 長度均介於 **10 至 35** 之間，`max_length = 40` 可完整涵蓋全部樣本而不發生截斷，長度不足的序列則以 padding 補齊至固定長度。
+`max_length = 40` 的設定來自對資料集的 Token 長度統計分析。經 Tokenizer 編碼後（含 `[CLS]` 與 `[SEP]`），所有 2,268 筆歇後語的 Token 長度均介於 **10 至 35** 之間，`max_length = 40` 可完整涵蓋全部樣本而不發生截斷，長度不足的序列則以 padding 補齊至固定長度。
