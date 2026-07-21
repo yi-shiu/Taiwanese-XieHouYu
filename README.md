@@ -1,6 +1,6 @@
 # 以詞表擴充與兩階段微調為基之臺語歇後語情感極性分類
 
-本專案以 [BERT-base-Chinese](https://huggingface.co/bert-base-chinese) 為骨幹，從 [T-BERT](https://huggingface.co/yixiuuu/tbert-base) 詞表中擷取臺語專有子詞並以其預訓練 Embedding 初始化，擴充模型對臺語詞彙的表徵能力。訓練採兩階段微調架構：Stage 1 凍結 Encoder 僅訓練 Embedding 與分類器；Stage 2 由高層至低層漸進式解凍，搭配層級學習率衰減以保留預訓練知識。並進一步比較 R-Drop 一致性正則化與 FGM 對抗訓練對分類效能及跨種子穩定性的影響。
+本專案以 [BERT-base-Chinese](https://huggingface.co/bert-base-chinese) 為骨幹，從 [T-BERT](https://huggingface.co/yixiuuu/tbert-base) 詞表中擷取臺語專有子詞並以其預訓練 Embedding 初始化，擴充模型對臺語詞的表徵能力。訓練採兩階段微調架構：Stage 1 凍結 Encoder 僅訓練 Embedding 與分類器；Stage 2 由頂層至底層漸進式解凍，搭配層級學習率衰減以保留預訓練知識。並進一步比較 R-Drop (Regularized Dropout) 一致性正則化與快速梯度法 (Fast Gradient Method, FGM) 對抗訓練對分類效能及跨種子穩定性的影響。
 
 實驗以自建 2,268 筆臺語歇後語情感標註資料集（正面／中性／負面）為基準，於五組隨機種子 × 五折分層交叉驗證下比較六種模型配置。
 
