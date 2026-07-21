@@ -132,10 +132,10 @@ pip install torch transformers scikit-learn pandas numpy matplotlib seaborn open
 
 ### 基線模型
 
-- **BERT-base-Chinese**(`bert-base-chinese`)：單階段微調基線。損失函數依各折訓練集類別分布計算類別權重，以加權交叉熵緩解正面／中性／負面樣本數不平衡問題，並搭配標籤平滑降低模型對單一類別的過度自信。
-- **T-BERT**(`yixiuuu/tbert-base`)：以臺語語料預訓練的 BERT，同樣採單階段微調，損失函數設定與 BERT-base-Chinese 相同。
+- **BERT-base-Chinese** (`bert-base-chinese`)：單階段微調基線。損失函數依各折訓練集類別分布計算類別權重，以加權交叉熵緩解正面／中性／負面樣本數不平衡問題，並搭配標籤平滑降低模型對單一類別的過度自信。
+- **T-BERT** (`yixiuuu/tbert-base`)：以臺語語料預訓練的 BERT，同樣採單階段微調，損失函數設定與 BERT-base-Chinese 相同。
 
-### 提案模型：兩階段微調(Two-Stage Fine-tuning)
+### 提案模型：兩階段微調 (Two-Stage Fine-tuning)
 
 以 `bert-base-chinese` 為骨幹，從 T-BERT 詞表中篩選臺語專有子詞並擴充詞表，同時以 T-BERT 預訓練向量初始化新增 Embedding。
 
@@ -180,7 +180,7 @@ run_multi_lr_experiment(
 
 如需執行不同隨機種子 (0、1、42、123、1234)，請修改 `if __name__ == "__main__":` 區塊內的 `seed` 參數，每次執行一組。
 
-### 詞頻篩選(`min_new_token_freq`)
+### 詞頻篩選 (`min_new_token_freq`)
 
 詞表擴充時，會先統計 T-BERT 專有子詞在訓練語料中的出現頻率，只有出現次數**大於或等於**此門檻的子詞才會被加入詞表。
 
