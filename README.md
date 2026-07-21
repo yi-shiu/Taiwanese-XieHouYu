@@ -7,7 +7,7 @@
 - 分類類別：正面 (+1)、中性 (0)、負面 (-1)
 - 模型配置：BERT-base-Chinese、T-BERT、Two-Stage、Two-Stage + R-Drop、Two-Stage + FGM、Two-Stage + R-Drop + FGM
 - 實驗環境：NVIDIA GeForce RTX 2060
-- 評估方式：五組隨機種子（0、1、42、123、1234）× 五折分層交叉驗證
+- 評估方式：五組隨機種子(0、1、42、123、1234) × 五折分層交叉驗證
 
 ---
 
@@ -22,7 +22,7 @@
 ├── cv_two_stage.py              # 提案：兩階段微調（詞表擴充 + 逐步解凍）
 ├── cv_two_stage_rdrop.py        # 提案 + R-Drop 一致性正則化
 ├── cv_two_stage_fgm.py          # 提案 + FGM 對抗式訓練
-├── cv_two_stage_rdropfgm.py     # 提案 + R-Drop + FGM（完整版）
+├── cv_two_stage_rdropfgm.py     # 提案 + R-Drop + FGM（最終模型）
 │
 ├── analyze_token_lengths.py     # 分析 Tokenizer 編碼後的 Token 長度分佈
 ├── common_misclassified.py      # 找出六種模型共同預測錯誤的樣本
@@ -40,15 +40,15 @@
 | `xie_hou_yu` | 歇後語文本                                  |
 | `sentiment`  | 情感標籤（`1`＝正面、`2`＝中性、`3`＝負面） |
 
-標籤分佈：正面 387 筆 (17.06%）、中性 577 筆（25.44%）、負面 1,304 筆（57.50%）。
+標籤分佈：正面 387 筆 (17.06%)、中性 577 筆 (25.44%)、負面 1,304 筆 (57.50%)。
 
 ### 資料來源
 
 為確保標註品質，依正向、中性與負向類別比例進行分層隨機抽樣，抽取約 10% 樣本由第二位標註者獨立標記，以 Cohen's κ 評估一致性，意見相左者由第三人裁決。資料集整合以下四類來源，以「謎面──謎底」組合為唯一識別鍵去重複，得到 2,268 筆後進行人工標記：
 
-1. **潘榮禮（2005）**《臺灣孽恝話新解》——取自[黃仲杰](https://hdl.handle.net/11296/pveak2) (2015)依此書建立之情感標註資料集，共 1,089 筆
-2. **林文平（2000）**《台灣歇後語典》——共 889 筆
-3. **王永興（2015）**《台灣歇後語謔詰話》——因已絕版，依博客來公開書目頁面取得附有釋義之前 58 筆
+1. **潘榮禮(2005)**《臺灣孽恝話新解》——取自[黃仲杰](https://hdl.handle.net/11296/pveak2) (2015) 依此書建立之情感標註資料集，共 1,089 筆
+2. **林文平(2000)**《台灣歇後語典》——共 889 筆
+3. **王永興(2015)**《台灣歇後語謔詰話》——因已絕版，依博客來公開書目頁面取得附有釋義之前 58 筆
 4. **網路爬蟲**——以 Python Selenium 搭配 BeautifulSoup4 爬取下列公開網頁，共取得候選樣本 1,439 筆，經格式清理、去重複及人工審查後，保留 163 筆正向、265 筆中性樣本納入資料集
 
 | 爬蟲網站名稱                                                                                                                                  | 資料筆數 | 擷取日期   |
@@ -76,7 +76,7 @@ python -c "from transformers import AutoTokenizer, AutoModel; AutoTokenizer.from
 
 HuggingFace 頁面：https://huggingface.co/bert-base-chinese
 
-### T-BERT（tbert-base）
+### T-BERT (tbert-base)
 
 由[鍾明諺](https://hdl.handle.net/11296/aqxj79)開發，以臺灣國語、閩南語與客家語混合語料預訓練，詞表規模達 89,660 個子詞單元。訓練程式碼與語料來自 [DeepqEducation/t-bert](https://github.com/DeepqEducation/t-bert)；本研究直接載入發布於 HuggingFace 的預訓練模型權重。
 
@@ -132,16 +132,16 @@ pip install torch transformers scikit-learn pandas numpy matplotlib seaborn open
 
 ### 基線模型
 
-- **BERT-base-Chinese**（`bert-base-chinese`）：單階段微調基線。損失函數依各折訓練集類別分布計算類別權重，以加權交叉熵緩解正面／中性／負面樣本數不平衡問題，並搭配標籤平滑降低模型對單一類別的過度自信。
-- **T-BERT**（`yixiuuu/tbert-base`）：以臺語語料預訓練的 BERT，同樣採單階段微調，損失函數設定與 BERT-base-Chinese 相同。
+- **BERT-base-Chinese**(`bert-base-chinese`)：單階段微調基線。損失函數依各折訓練集類別分布計算類別權重，以加權交叉熵緩解正面／中性／負面樣本數不平衡問題，並搭配標籤平滑降低模型對單一類別的過度自信。
+- **T-BERT**(`yixiuuu/tbert-base`)：以臺語語料預訓練的 BERT，同樣採單階段微調，損失函數設定與 BERT-base-Chinese 相同。
 
-### 提案模型：兩階段微調（Two-Stage Fine-tuning）
+### 提案模型：兩階段微調(Two-Stage Fine-tuning)
 
 以 `bert-base-chinese` 為骨幹，從 T-BERT 詞表中篩選臺語專有子詞並擴充詞表，同時以 T-BERT 預訓練向量初始化新增 Embedding。
 
 **Stage 1**：凍結 Encoder，僅訓練 Embedding、Pooler 與 Classifier。
 
-**Stage 2**：分三個 Phase，由頂層往底層逐步解凍 Encoder，搭配逐層學習率衰減（`decay^depth`）：
+**Stage 2**：分三個 Phase，由頂層往底層逐步解凍 Encoder，搭配逐層學習率衰減 (`decay^depth`)：
 
 | Phase | 新增解凍層 | 累積解凍層範圍 | 頂層學習率 |
 | ----- | ---------- | -------------- | ---------- |
@@ -163,13 +163,13 @@ pip install torch transformers scikit-learn pandas numpy matplotlib seaborn open
 
 ### 隨機種子
 
-兩階段微調系列（`cv_two_stage.py`、`cv_two_stage_rdrop.py`、`cv_two_stage_fgm.py`、`cv_two_stage_rdropfgm.py`）預設跨五組隨機種子執行：
+兩階段微調系列 (`cv_two_stage.py`、`cv_two_stage_rdrop.py`、`cv_two_stage_fgm.py`、`cv_two_stage_rdropfgm.py`) 預設跨五組隨機種子執行：
 
 ```python
 seeds = (0, 1, 42, 123, 1234)
 ```
 
-基線模型（`cv_bert-base-chinese.py`、`cv_t-bert.py`）預設 `seed=0`，搭配多組學習率搜尋：
+基線模型 (`cv_bert-base-chinese.py`、`cv_t-bert.py`) 預設 `seed=0`，搭配多組學習率搜尋：
 
 ```python
 run_multi_lr_experiment(
@@ -178,9 +178,9 @@ run_multi_lr_experiment(
 )
 ```
 
-如需執行不同隨機種子（0、1、42、123、1234），請修改 `if __name__ == "__main__":` 區塊內的 `seed` 參數，每次執行一組。
+如需執行不同隨機種子 (0、1、42、123、1234)，請修改 `if __name__ == "__main__":` 區塊內的 `seed` 參數，每次執行一組。
 
-### 詞頻篩選（`min_new_token_freq`）
+### 詞頻篩選(`min_new_token_freq`)
 
 詞表擴充時，會先統計 T-BERT 專有子詞在訓練語料中的出現頻率，只有出現次數**大於或等於**此門檻的子詞才會被加入詞表。
 
@@ -196,9 +196,9 @@ class CFG:
 建議值參考：
 
 - `1`：保留所有語料中出現的新詞（本實驗預設值）
-- `2`：排除僅出現一次的極低頻子詞——論文實驗顯示，在兩階段微調模型（`cv_two_stage.py`）下此設定的改善案例多於退化案例，有助於提升分類效益
+- `2`：排除僅出現一次的極低頻子詞——論文實驗顯示，在兩階段微調模型 (`cv_two_stage.py`) 下此設定的改善案例多於退化案例，有助於提升分類效益
 
-> 注意：此設定僅對兩階段微調系列有效。基線模型（BERT-base-Chinese、T-BERT）不涉及詞表擴充，無此參數。
+> 注意：此設定僅對兩階段微調系列有效。基線模型 (BERT-base-Chinese、T-BERT) 不涉及詞表擴充，無此參數。
 
 ---
 
@@ -210,7 +210,7 @@ class CFG:
 2. 對剩餘 85% 執行 **5-fold 分層交叉驗證**
 3. 各折依**驗證集 Macro F1** 選擇最佳 checkpoint，取五折最佳 Epoch 的平均值作為重訓目標
 4. 以完整訓練驗證集重新訓練最終模型，並在保留測試集上進行**最終評估**，回報 Accuracy、Macro F1、Weighted F1
-5. 匯出各折指標、錯誤分類樣本（xlsx）與跨 Seed 彙總報告
+5. 匯出各折指標、錯誤分類樣本(xlsx)與跨 Seed 彙總報告
 
 ---
 
